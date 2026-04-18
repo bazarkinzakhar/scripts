@@ -1,0 +1,35 @@
+#!/bin/bash
+
+[[ $# -eq 0 ]] && echo "Usage: $0 -s <src> -d <dst> [-t <days>]" && exit 1
+
+RETENTION=7
+
+while getopts "s:d:t:" opt; do
+    case "$opt" in
+        s) SRC=$OPTARG ;;
+        d) DST=$OPTARG ;;
+        t) RETENTION=$OPTARG ;;
+        *) exit 1 ;;
+    esac
+done
+
+if [[ ! -d "$SRC" ]]; then
+    echo "[!] Source directory not found: $SRC" >&2
+    exit 1
+fi
+
+mkdir -p "$DST"
+
+TS=$(date +%Y%m%d_%H%M)
+BKP_FILE="$DST/backup_$TS.tar.gz"
+
+echo "[*] Archiving $SRC to $BKP_FILE..."
+
+if tar -czf "$BKP_FILE" -C "$(dirname "$SRC")" "$(basename "$SRC")"; then
+    echo "[+] Success"
+    find "$DST" -type f -name "backup_*.tar.gz" -mtime +"$RETENTION" -delete
+    echo "[+] Cleanup complete (Retention: $RETENTION days)"
+else
+    echo "[!] Backup failed" >&2
+    exit 1
+fi
