@@ -1,37 +1,28 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -euo pipefail
 
-[[ $# -eq 0 ]] && echo "Usage: $0 -s <src> -d <dst> [-t <days>]" && exit 1
+BACKUP_SRC=${BACKUP_SRC:-/data}
+BACKUP_DEST=${BACKUP_DEST:-/backup}
+RETENTION_DAYS=${RETENTION_DAYS:-7}
+LOCK_FILE=/var/lock/backup.lock
+LOG_FILE=/var/log/backup.log
 
-RETENTION=7
+exec 200>$LOCK_FILE
+flock -n 200 || exit 1
 
-while getopts "s:d:t:" opt; do
-    case "$opt" in
-        s) SRC=$OPTARG ;;
-        d) DST=$OPTARG ;;
-        t) RETENTION=$OPTARG ;;
-        *) exit 1 ;;
-    esac
-done
+mkdir -p "$BACKUP_DEST"
 
-if [[ ! -d "$SRC" ]]; then
-    echo "[!] Source directory not found: $SRC" >&2
-    exit 1
+AVAILABLE=$(df "$BACKUP_DEST" | awk 'NR==2 {print $4}')
+if [ "$AVAILABLE" -lt 1048576 ]; then
+  echo "not enough space" >> "$LOG_FILE"
+  exit 1
 fi
 
-mkdir -p "$DST"
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+ARCHIVE="$BACKUP_DEST/backup-$TIMESTAMP.tar.gz"
 
-TS=$(date +%Y%m%d_%H%M)
-BKP_FILE="$DST/backup_$TS.tar.gz"
+tar -czf "$ARCHIVE" "$BACKUP_SRC"
 
-echo "[*] Archiving $SRC to $BKP_FILE..."
+find "$BACKUP_DEST" -type f -name "backup-*.tar.gz" -mtime +$RETENTION_DAYS -delete
 
-if tar -czf "$BKP_FILE" -C "$(dirname "$SRC")" "$(basename "$SRC")"; then
-    echo "[+] Success"
-    find "$DST" -type f -name "backup_*.tar.gz" -mtime +"$RETENTION" -delete
-    echo "[+] Cleanup complete (Retention: $RETENTION days)"
-else
-    echo "[!] Backup failed" >&2
-    exit 1
-fi
+echo "backup completed $TIMESTAMP" >> "$LOG_FILE"
