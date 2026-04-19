@@ -1,39 +1,28 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
-readonly LOG_FILE="/tmp/deploy_$(date +%F).log"
-readonly APP_DIR="${APP_DIR:-/opt/ml_app}"
+APP_DIR=${APP_DIR:-/opt/app}
+REPO=${REPO:-https://github.com/example/app.git}
+BRANCH=${BRANCH:-main}
+LOG_FILE=/var/log/deploy.log
 
-log() {
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')] $1" | tee -a "$LOG_FILE"
-}
+if [ ! -d "$APP_DIR/.git" ]; then
+  git clone -b "$BRANCH" "$REPO" "$APP_DIR"
+fi
 
-error_handler() {
-    log "CRITICAL: Script failed at line $1"
-    exit 1
-}
-trap 'error_handler $LINENO' ERR
+cd "$APP_DIR"
 
-check_deps() {
-    for cmd in docker git python3; do
-        if ! command -v "$cmd" &> /dev/null; then
-            log "ERROR: $cmd is not installed."
-            exit 1
-        fi
-    done
-}
+git fetch origin
+git reset --hard origin/$BRANCH
 
-main() {
-    log "Starting deployment process..."
-    check_deps
-    
-    if [[ ! -d "$APP_DIR" ]]; then
-        log "Creating directory $APP_DIR..."
-        mkdir -p "$APP_DIR"
-    fi
+if [ -f package.json ]; then
+  npm ci
+  npm run build
+fi
 
-    log "Deployment finished successfully."
-}
+if [ -f docker-compose.yml ]; then
+  docker compose pull
+  docker compose up -d --remove-orphans
+fi
 
-main "$@"
+echo "deploy completed $(date)" >> "$LOG_FILE"
