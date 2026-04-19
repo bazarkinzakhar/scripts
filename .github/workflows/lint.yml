@@ -1,12 +1,47 @@
-name: ShellCheck
-on: [push, pull_request]
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
 jobs:
-  shellcheck:
-    name: Run ShellCheck
+  shell:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './'
+
+      - name: shellcheck
+        uses: ludeeus/action-shellcheck@2.0.0
+
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install ansible
+        run: pip install ansible ansible-lint
+
+      - name: lint ansible
+        run: ansible-lint ansible/
+
+  yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: yamllint
+        run: |
+          pip install yamllint
+          yamllint .
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: fmt
+        run: terraform -chdir=terraform/basic fmt -check
