@@ -1,12 +1,26 @@
 # homelab-docker
+
 набор докер configs для моей лабы
 
 ### что тут есть:
+
 - **monitoring/**: prometheus + grafana + node_exporter, поднимается одной командой, собирает базовые метрики
 - **web/**: базовый nginx, использую как заготовку под реверс прокси
 
 ### как запускать:
+
 - перейти в нужную папку
 - docker-compose up -d
 
 все настроено так, чтобы работать на стандартных портах
+
+Configure env:
+cp .env.example .env
+
+# Edit .env with your credentials
+
+Setup directories:
+mkdir -p data/{traefik,prometheus,jellyfin}
+
+Deploy:
+docker compose up -d
