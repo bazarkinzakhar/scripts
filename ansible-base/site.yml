@@ -1,0 +1,10 @@
+---
+- name: Apply common configuration to all nodes
+  hosts: all
+  roles:
+    - common
+
+- name: Deploy Webserver logic
+  hosts: webserver
+  roles:
+    - webserver
