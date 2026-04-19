@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 [[ $# -eq 0 ]] && echo "Usage: $0 -s <src> -d <dst> [-t <days>]" && exit 1
 
 RETENTION=7
