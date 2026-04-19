@@ -1,0 +1,13 @@
+name: ml_ci
+on: [push]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install flake8
+      - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
