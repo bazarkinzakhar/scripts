@@ -2,12 +2,10 @@
 
 набор докер configs для моей лабы
 
-### что тут есть:
+monitoring: prometheus + grafana + node_exporter, поднимается одной командой, собирает базовые метрики
+web: nginx
 
-- **monitoring/**: prometheus + grafana + node_exporter, поднимается одной командой, собирает базовые метрики
-- **web/**: базовый nginx, использую как заготовку под реверс прокси
-
-### как запускать:
+как запускать:
 
 - перейти в нужную папку
 - docker-compose up -d
@@ -16,8 +14,6 @@
 
 Configure env:
 cp .env.example .env
-
-# Edit .env with your credentials
 
 Setup directories:
 mkdir -p data/{traefik,prometheus,jellyfin}
