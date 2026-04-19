@@ -3,9 +3,9 @@ from fastapi import FastAPI
 app = FastAPI()
 
 @app.get("/api")
-def read_root():
-    return {"status": "Backend is ok"}
+async def root():
+    return {"message": "python backend is working via traefik", "status": "success"}
 
-@app.get("/healthz")
-def health_check():
-    return {"status": "ok"}
+@app.get("/")
+async def home():
+    return {"message": "this is home"}
