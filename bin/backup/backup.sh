@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+c
 set -Eeuo pipefail
 LOCK_DIR="/tmp/backup_atomic.lock"
 
