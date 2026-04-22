@@ -50,15 +50,18 @@
 
 # запуск в режиме тестирования
 ./backup.sh -s /etc -d /tmp/test_repo -n
-
+'''
 ## план восстановления
 * 1. Просмотр доступных копий
-Bash
+'''bash
 restic -r /path/to/repo snapshots
+'''
 * 2. Полное восстановление (последняя копия)
 '''bash
 restic -r /path/to/repo restore latest --target /tmp/recovery-folder
+'''
 * 3. Монтирование для поиска файлов
 '''bash
 mkdir /mnt/restic
 restic -r /path/to/repo mount /mnt/restic
+'''
